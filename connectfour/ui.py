@@ -133,7 +133,7 @@ class Terrain(Canvas):
         self.last_bstate = copy.deepcopy(self.b)
 
         # Human Action
-        if not self.winner:
+        if not self.winner or not self.b.terminal():
             col = int(event.x / 71)  # TODO: magic number here
             row = self.b.try_move(col)
 
@@ -169,7 +169,12 @@ def game_loop(root, game, terrain):
     def inner():
         # If current player is a Human Player, we just keep waiting for a
         # UI event to trigger the move
-        if type(game.current_player) is not HumanPlayer:
+
+        # Modified
+        # It is the easiest way to fix the situation that one move after other wins
+        # There should be a condition check before calculate next move
+        # Because the following 'if' statement does not work well
+        if type(game.current_player) is not HumanPlayer and not terrain.b.terminal():
             terrain.run_computer_move()
             game.change_turn()
             terrain.set_post_move_state()
@@ -181,7 +186,6 @@ def game_loop(root, game, terrain):
         elif terrain.winner and terrain.game.exit_on_game_end:
             time.sleep(1)
             run_exit(game, game.board.winner())
-
     return inner
 
 

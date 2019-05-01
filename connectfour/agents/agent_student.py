@@ -119,7 +119,6 @@ class StudentAgent(RandomAgent):
             if ratio > score:
                 score = ratio
             return score
-            # return self.__negamax(board, node_count, self.id)
         else:
             return -1
         """
