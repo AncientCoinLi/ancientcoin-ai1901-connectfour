@@ -71,7 +71,6 @@ class StudentAgent(RandomAgent):
             If we have won the game, return 1.
             If neither of the players has won, return a random number.
         """
-
         if self.id == 1:
             self_index = 0
             other_index = 1
@@ -87,12 +86,12 @@ class StudentAgent(RandomAgent):
             self.__update_scores(board, board.last_move, True)
             last_row = board.last_move[0]
             last_col = board.last_move[1]
-            standard = len(board.winning_zones[last_col][last_row])
-
+            num_of_winning_zones_self = len(board.winning_zones[last_col][last_row])
             # minimise opposite's benefit
             score = -1
-            count_of_3_oppo = -100
-            count_of_3_self = -100
+            count_of_3_oppo = 0
+            count_of_3_self = 0
+            num_max_oppo_winning_zones = 0
             count = 0
             for win_index in range(len(board.score_array[other_index])):
                 if board.score_array[self_index][win_index] - board.score_array[other_index][win_index] == 3:
@@ -103,8 +102,6 @@ class StudentAgent(RandomAgent):
                 row = board.try_move(col)
                 next_state = board.next_state(other_id, col)
                 if next_state != 0:
-                    if next_state.winner() == other_id:
-                        return -1
                     self.__update_scores(next_state, [row, col], False)
                     index = -1
                     count = 0
@@ -113,9 +110,14 @@ class StudentAgent(RandomAgent):
                             count += 1
                     if count > count_of_3_oppo:
                         count_of_3_oppo = count
+                    num_of_winning_zones_oppo = len(board.winning_zones[col][row])
+                    if num_of_winning_zones_oppo > num_max_oppo_winning_zones:
+                        num_max_oppo_winning_zones = num_of_winning_zones_oppo
+                    if next_state.winner() == other_id:
+                        # if oppo construct a double 3 by coincidence , this can do its best to survive
+                        return -1 - count_of_3_oppo / 100
 
-            num_of_winning_zones = len(board.winning_zones[col][row])
-            ratio = (standard - num_of_winning_zones + 100/(count_of_3_oppo+1) + count_of_3_self * 10) / 150
+            ratio = (num_of_winning_zones_self * 2 - num_max_oppo_winning_zones + 100/(count_of_3_oppo+1) + count_of_3_self * 10) / 200
             if ratio > score:
                 score = ratio
             return score
